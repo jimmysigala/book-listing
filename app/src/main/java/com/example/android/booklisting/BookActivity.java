@@ -44,16 +44,22 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         searchButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Perform action on click
+                ConnectivityManager connManager
+                        = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo networkInfo = connManager.getActiveNetworkInfo();
 
-                bookSearchKeyword = keyword.getText().toString();
-
-                bookUrl = "https://www.googleapis.com/books/v1/volumes?q=" + bookSearchKeyword;
-
-                View loadingIndicator = findViewById(R.id.loading_spinner);
-                loadingIndicator.setVisibility(View.VISIBLE);
-
-                getLoaderManager().restartLoader(0, null, BookActivity.this);
-
+                //If there is a network connection fetch data
+                if (networkInfo != null && networkInfo.isConnected()) {
+                    // Change url depending on keywords entered in search, restart loader
+                    bookSearchKeyword = keyword.getText().toString();
+                    bookUrl = "https://www.googleapis.com/books/v1/volumes?q=" + bookSearchKeyword;
+                    View loadingIndicator = findViewById(R.id.loading_spinner);
+                    loadingIndicator.setVisibility(View.VISIBLE);
+                    getLoaderManager().restartLoader(1, null, BookActivity.this);
+                } else {
+                    // Display Error
+                    mEmptyStateTextView.setText(R.string.no_connection);
+                }
             }
         });
 
@@ -78,16 +84,14 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
             LoaderManager loaderManager = getLoaderManager();
 
             // Initialize the loader. Pass in the int ID constant defined above and pass in null for
-            // the bundle. Pass in this activity for the LoaderCallbacks parameter (which is valid
-            // because this activity implements the LoaderCallbacks interface).
+            // the bundle. Pass in this activity for the LoaderCallbacks parameter.
+            // (this activity implements the LoaderCallbacks interface).
             loaderManager.initLoader(1, null, this);
         } else {
-
             View loadingIndicator = findViewById(R.id.loading_spinner);
             loadingIndicator.setVisibility(View.GONE);
-
             // Display Error
-            mEmptyStateTextView.setText("No Internet Connection");
+            mEmptyStateTextView.setText(R.string.no_connection);
         }
     }
 
@@ -102,7 +106,7 @@ public class BookActivity extends AppCompatActivity implements LoaderManager.Loa
         progress.setVisibility(View.GONE);
 
         // Display no data found if data is null
-        mEmptyStateTextView.setText("No Data found. Try Searching for a book.");
+        mEmptyStateTextView.setText(R.string.no_data);
         adapter.clear();
 
         if (books != null && !books.isEmpty()) {

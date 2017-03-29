@@ -121,15 +121,22 @@ public final class QueryUtils {
             JSONObject root = new JSONObject(booksJSON);
             JSONArray itemsArray = root.optJSONArray("items");
 
-            for (int i = 0; i < itemsArray.length(); i++) {
+            if(itemsArray == null){
+                return null;
+            } else {
 
-                JSONObject currentBook = itemsArray.getJSONObject(i);
-                JSONObject volumeInfo = currentBook.getJSONObject("volumeInfo");
+                for (int i = 0; i < itemsArray.length(); i++) {
 
-                // Extract the value for the key called "title" and "authors"
-                String title = volumeInfo.getString("title");
-                String author = volumeInfo.getString("authors");
-                books.add(new Book(title, author));
+                    JSONObject currentBook = itemsArray.getJSONObject(i);
+                    JSONObject volumeInfo = currentBook.getJSONObject("volumeInfo");
+
+                    if(volumeInfo.has("authors") && volumeInfo.has("title")) {
+                    // Extract the value for the key called "title" and "authors"
+                         String title = volumeInfo.getString("title");
+                        String author = volumeInfo.getString("authors");
+                        books.add(new Book(title, author));
+                    }
+                }
             }
 
         } catch (JSONException e) {
